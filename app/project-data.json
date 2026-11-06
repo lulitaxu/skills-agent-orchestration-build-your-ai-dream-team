@@ -1,0 +1,46 @@
+{
+  "projects": [
+    {
+      "name": "Northstar mobile refresh",
+      "owner": "Maya Chen",
+      "status": "On track",
+      "recentActivity": "Completed the accessibility audit and shared the revised navigation prototype.",
+      "priority": "High"
+    },
+    {
+      "name": "Atlas billing migration",
+      "owner": "Jordan Williams",
+      "status": "At risk",
+      "recentActivity": "The data reconciliation workshop moved to Thursday while the team investigates two edge cases.",
+      "priority": "High"
+    },
+    {
+      "name": "Greenhouse analytics",
+      "owner": "Priya Nair",
+      "status": "On track",
+      "recentActivity": "New retention dashboard is in review with the customer insights team.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Beacon design system",
+      "owner": "Elliot Foster",
+      "status": "Complete",
+      "recentActivity": "Version 3.2 shipped with updated form controls and usage guidance.",
+      "priority": "Low"
+    },
+    {
+      "name": "Signal partner portal",
+      "owner": "Amara Okafor",
+      "status": "Blocked",
+      "recentActivity": "Waiting on the identity provider certificate before staging can be reopened.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Cedar onboarding",
+      "owner": "Leo Martinez",
+      "status": "On track",
+      "recentActivity": "Ran the first beta cohort and captured a shortlist of improvements for the next sprint.",
+      "priority": "Low"
+    }
+  ]
+}

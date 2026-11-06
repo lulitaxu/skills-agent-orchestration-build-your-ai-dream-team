@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A clear, at-a-glance view of project health and momentum.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div>
+          <p class="eyebrow">Portfolio overview</p>
+          <h1>Project Pulse</h1>
+          <p class="intro">A focused view of what is moving, what needs attention, and who is leading the work.</p>
+        </div>
+        <div class="header-mark" aria-hidden="true">PP</div>
+      </header>
+
+      <section class="summary-strip" aria-label="Portfolio summary">
+        <div class="summary-item">
+          <span class="summary-label">Total projects</span>
+          <strong id="project-count">—</strong>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">On track</span>
+          <strong id="on-track-count">—</strong>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Needs attention</span>
+          <strong id="attention-count">—</strong>
+        </div>
+        <div class="summary-note">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span id="last-updated">Loading latest project data…</span>
+        </div>
+      </section>
+
+      <section class="projects-section" aria-labelledby="projects-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Current initiatives</p>
+            <h2 id="projects-heading">Your projects</h2>
+          </div>
+          <p id="load-status" class="live-status" role="status" aria-live="polite">Loading projects…</p>
+        </div>
+        <div id="projects-container" class="projects-grid" aria-live="polite" aria-busy="true">
+          <div class="state-panel loading-state">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading projects…</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const container = document.getElementById("projects-container");
+      const count = document.getElementById("project-count");
+      const onTrackCount = document.getElementById("on-track-count");
+      const attentionCount = document.getElementById("attention-count");
+      const loadStatus = document.getElementById("load-status");
+      const lastUpdated = document.getElementById("last-updated");
+
+      const textOrFallback = (value, fallback) =>
+        typeof value === "string" && value.trim() ? value.trim() : fallback;
+
+      const normalizedValue = (value) =>
+        textOrFallback(value, "Unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+      function projectCard(project, index) {
+        const name = textOrFallback(project && project.name, `Untitled project ${index + 1}`);
+        const owner = textOrFallback(project && project.owner, "Owner not assigned");
+        const status = textOrFallback(project && project.status, "Unknown status");
+        const activity = textOrFallback(project && project.recentActivity, "No recent activity reported.");
+        const priority = textOrFallback(project && project.priority, "Unknown priority");
+        const statusKey = normalizedValue(status);
+        const priorityKey = normalizedValue(priority);
+
+        const article = document.createElement("article");
+        article.className = "project-card";
+        article.innerHTML = `
+          <div class="card-topline">
+            <span class="project-index" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
+            <div class="badge-group">
+              <span class="badge status-badge status-${statusKey}">Status: ${status}</span>
+              <span class="badge priority-badge priority-${priorityKey}">Priority: ${priority}</span>
+            </div>
+          </div>
+          <h3>${name.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</h3>
+          <p class="owner"><span aria-hidden="true">Lead</span> ${owner.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+          <div class="activity">
+            <span class="activity-label">Recent activity</span>
+            <p>${activity.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+          </div>
+        `;
+        return article;
+      }
+
+      function showState(title, message, stateClass) {
+        container.className = `projects-grid ${stateClass}`;
+        container.innerHTML = `<div class="state-panel"><h3>${title}</h3><p>${message}</p></div>`;
+        container.setAttribute("aria-busy", "false");
+      }
+
+      fetch("project-data.json")
+        .then((response) => {
+          if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
+          return response.json();
+        })
+        .then((data) => {
+          const projects = Array.isArray(data && data.projects) ? data.projects : [];
+          count.textContent = projects.length;
+          onTrackCount.textContent = projects.filter((project) => normalizedValue(project && project.status) === "on-track").length;
+          attentionCount.textContent = projects.filter((project) => ["at-risk", "blocked", "needs-attention"].includes(normalizedValue(project && project.status))).length;
+          lastUpdated.textContent = "Live project snapshot";
+
+          if (!projects.length) {
+            loadStatus.textContent = "No projects to display";
+            showState("No projects yet", "Your project list is empty. Add an initiative to see its pulse here.", "empty-state");
+            return;
+          }
+
+          container.className = "projects-grid";
+          container.replaceChildren(...projects.map(projectCard));
+          container.setAttribute("aria-busy", "false");
+          loadStatus.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} loaded`;
+        })
+        .catch(() => {
+          count.textContent = "—";
+          onTrackCount.textContent = "—";
+          attentionCount.textContent = "—";
+          lastUpdated.textContent = "Unable to refresh";
+          loadStatus.textContent = "Project data unavailable";
+          showState("Unable to load projects", "We couldn't retrieve the project data. Please check the data file and try again.", "error-state");
+        });
+    </script>
+  </body>
+</html>
